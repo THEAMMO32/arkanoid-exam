@@ -11,7 +11,7 @@ class Menu:
         self.font = pygame.font.Font(None, 48)
         self.small_font = pygame.font.Font(None, 36)
         self.selected = 0
-        self.options = ['Easy', 'Medium', 'Hard']
+        self.options = ['Level 1', 'Level 2', 'Level 3']
         self.running = True
 
     def draw(self):
@@ -39,7 +39,7 @@ class Menu:
             elif event.key == pygame.K_DOWN:
                 self.selected = (self.selected + 1) % len(self.options)
             elif event.key == pygame.K_RETURN:
-                return self.selected  # возвращаем индекс выбранного уровня
+                return self.selected  # 0,1,2
         return None
 
     def run(self):
