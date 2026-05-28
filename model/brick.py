@@ -1,4 +1,6 @@
 class Brick:
+    """Модель кирпича с прочностью."""
+
     def __init__(self, x, y, width, height, strength):
         self.x = x
         self.y = y
@@ -8,6 +10,7 @@ class Brick:
         self.alive = True
 
     def hit(self):
+        """Уменьшает прочность. Возвращает True, если кирпич разрушен."""
         if not self.alive:
             return False
         self.strength -= 1

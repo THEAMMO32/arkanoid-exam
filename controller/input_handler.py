@@ -3,6 +3,8 @@ import sys
 from utils.constants import STATE_PAUSED
 
 class InputHandler:
+    """Обработка ввода с клавиатуры и мыши."""
+
     def __init__(self):
         self.left = False
         self.right = False
