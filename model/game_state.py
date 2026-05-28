@@ -49,7 +49,7 @@ class GameState:
             for col in range(cols):
                 x = start_x + col * (brick_width + gap_x)
                 y = BRICK_OFFSET_Y + row * (brick_height + gap_y)
-                strength = 2 if row >= rows - 2 else 1
+                strength = 1
                 self.bricks.append(Brick(x, y, brick_width, brick_height, strength))
 
     def get_alive_bricks(self):

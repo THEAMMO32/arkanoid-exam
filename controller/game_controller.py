@@ -2,7 +2,6 @@ from model.collision import rect_collision, get_collision_side, ball_paddle_coll
 from utils.constants import *
 
 class GameController:
-    """Обновляет состояние модели на основе ввода и физики."""
 
     def __init__(self, game_state):
         self.game_state = game_state
@@ -38,19 +37,28 @@ class GameController:
         if ball_paddle_collision(ball_rect, paddle_rect, self.game_state.ball):
             self.game_state.ball.y = paddle_rect[1] - BALL_RADIUS
 
-        for brick in self.game_state.bricks:
-            if not brick.alive:
-                continue
-            brick_rect = brick.get_rect()
-            if rect_collision(ball_rect, brick_rect):
-                side = get_collision_side(ball_rect, brick_rect)
-                if side in ('left', 'right'):
-                    self.game_state.ball.bounce_x()
-                else:
-                    self.game_state.ball.bounce_y()
-                if brick.hit():
-                    self.game_state.score += 10
-                break
+        # Обработка коллизий с блоками: повторяем, пока есть столкновения
+        collision_occurred = True
+        max_iterations = 20  # защита от бесконечного цикла
+        iterations = 0
+        while collision_occurred and iterations < max_iterations:
+            collision_occurred = False
+            ball_rect = self.game_state.ball.get_rect()
+            for brick in self.game_state.bricks:
+                if not brick.alive:
+                    continue
+                brick_rect = brick.get_rect()
+                if rect_collision(ball_rect, brick_rect):
+                    side = get_collision_side(ball_rect, brick_rect)
+                    if side in ('left', 'right'):
+                        self.game_state.ball.bounce_x()
+                    else:
+                        self.game_state.ball.bounce_y()
+                    if brick.hit():
+                        self.game_state.score += 10
+                    collision_occurred = True
+                    break  # после отскока выходим из цикла поиска, затем снова проверяем
+            iterations += 1
 
         if self.game_state.all_bricks_destroyed():
             self.game_state.state = STATE_WIN
