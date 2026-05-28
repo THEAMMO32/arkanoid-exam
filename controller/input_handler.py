@@ -1,4 +1,5 @@
 import pygame
+import sys
 from utils.constants import STATE_PAUSED
 
 class InputHandler:
@@ -20,6 +21,9 @@ class InputHandler:
                     game_state.state = STATE_PAUSED
             elif event.key == pygame.K_r:
                 self.restart_request = True
+            elif event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                sys.exit()
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
                 self.left = False
