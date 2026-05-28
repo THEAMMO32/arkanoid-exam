@@ -28,16 +28,29 @@ class GameState:
             BALL_SPEED_Y
         )
 
-        total_width = BRICK_COLS * (BRICK_WIDTH + BRICK_GAP_X) - BRICK_GAP_X
+        brick_width = BRICK_WIDTH
+        brick_height = BRICK_HEIGHT
+        gap_x = BRICK_GAP_X
+        gap_y = BRICK_GAP_Y
+
+        margin = 10
+        available_width = width - 2 * margin
+        cols = (available_width + gap_x) // (brick_width + gap_x)
+        if cols < 1:
+            cols = 1
+
+        total_width = cols * (brick_width + gap_x) - gap_x
         start_x = (width - total_width) // 2
 
+        rows = BRICK_ROWS
+
         self.bricks = []
-        for row in range(BRICK_ROWS):
-            for col in range(BRICK_COLS):
-                x = start_x + col * (BRICK_WIDTH + BRICK_GAP_X)
-                y = BRICK_OFFSET_Y + row * (BRICK_HEIGHT + BRICK_GAP_Y)
-                strength = 2 if row >= BRICK_ROWS - 2 else 1
-                self.bricks.append(Brick(x, y, BRICK_WIDTH, BRICK_HEIGHT, strength))
+        for row in range(rows):
+            for col in range(cols):
+                x = start_x + col * (brick_width + gap_x)
+                y = BRICK_OFFSET_Y + row * (brick_height + gap_y)
+                strength = 2 if row >= rows - 2 else 1
+                self.bricks.append(Brick(x, y, brick_width, brick_height, strength))
 
     def get_alive_bricks(self):
         return [b for b in self.bricks if b.alive]
