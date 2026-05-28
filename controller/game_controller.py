@@ -1,7 +1,9 @@
-from model.collision import rect_collision, ball_paddle_collision
+from model.collision import rect_collision, get_collision_side, ball_paddle_collision
 from utils.constants import *
 
 class GameController:
+    """Обновляет состояние модели на основе ввода и физики."""
+
     def __init__(self, game_state):
         self.game_state = game_state
 
@@ -41,8 +43,11 @@ class GameController:
                 continue
             brick_rect = brick.get_rect()
             if rect_collision(ball_rect, brick_rect):
-                self.game_state.ball.bounce_y()
-                self.game_state.ball.y = brick_rect[1] - BALL_RADIUS if self.game_state.ball.vy > 0 else brick_rect[1] + brick_rect[3] + BALL_RADIUS
+                side = get_collision_side(ball_rect, brick_rect)
+                if side in ('left', 'right'):
+                    self.game_state.ball.bounce_x()
+                else:
+                    self.game_state.ball.bounce_y()
                 if brick.hit():
                     self.game_state.score += 10
                 break
