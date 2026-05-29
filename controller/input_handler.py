@@ -1,14 +1,16 @@
 import pygame
 import sys
-from utils.constants import STATE_PAUSED
+from utils.constants import *
+
 
 class InputHandler:
-    """Обработка ввода с клавиатуры и мыши."""
+    """Обработка ввода с клавиатуры."""
 
     def __init__(self):
         self.left = False
         self.right = False
         self.restart_request = False
+        self.menu_request = False
 
     def handle_event(self, event, game_state):
         if event.type == pygame.KEYDOWN:
@@ -19,10 +21,13 @@ class InputHandler:
             elif event.key == pygame.K_p:
                 if game_state.state == STATE_PAUSED:
                     game_state.state = STATE_RUNNING
-                else:
+                elif game_state.state == STATE_RUNNING:
                     game_state.state = STATE_PAUSED
             elif event.key == pygame.K_r:
                 self.restart_request = True
+            elif event.key == pygame.K_m:
+                if game_state.state in (STATE_GAME_OVER, STATE_WIN):
+                    self.menu_request = True
             elif event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
@@ -36,3 +41,4 @@ class InputHandler:
         self.left = False
         self.right = False
         self.restart_request = False
+        self.menu_request = False

@@ -1,55 +1,72 @@
 import pygame
-from utils.constants import STATE_MENU, STATE_RUNNING
+from utils.constants import *
+
 
 class Menu:
-    """Экран меню с выбором уровня сложности."""
+    """Главное меню и экран рекордов."""
 
     def __init__(self, screen, width, height):
         self.screen = screen
         self.width = width
         self.height = height
-        self.font = pygame.font.Font(None, 48)
-        self.small_font = pygame.font.Font(None, 36)
+        self.font = pygame.font.Font(None, 52)
+        self.small_font = pygame.font.Font(None, 32)
         self.selected = 0
-        self.options = ['Level 1', 'Level 2', 'Level 3']
-        self.running = True
+        self.mode = 'main'
+        self.main_options = [
+            'Легко',
+            'Средне',
+            'Сложно',
+            'Рекорды',
+            'Выход',
+        ]
 
-    def draw(self):
-        self.screen.fill((0, 0, 0))
-        title = self.font.render('ARKANOID', True, (255, 255, 255))
-        title_rect = title.get_rect(center=(self.width//2, self.height//4))
-        self.screen.blit(title, title_rect)
+    def draw(self, highscore):
+        """Рисует текущий экран меню."""
+        self.screen.fill((12, 12, 28))
+        title = self.font.render('АРКАНОИД', True, (255, 220, 100))
+        self.screen.blit(title, title.get_rect(center=(self.width // 2, self.height // 5)))
 
-        for i, option in enumerate(self.options):
-            color = (255, 255, 0) if i == self.selected else (255, 255, 255)
+        if self.mode == 'records':
+            self._draw_records(highscore)
+            return
+
+        for i, option in enumerate(self.main_options):
+            color = (255, 255, 80) if i == self.selected else (230, 230, 230)
             text = self.font.render(option, True, color)
-            text_rect = text.get_rect(center=(self.width//2, self.height//2 + i * 50))
-            self.screen.blit(text, text_rect)
+            self.screen.blit(
+                text,
+                text.get_rect(center=(self.width // 2, self.height // 2 + i * 52))
+            )
+        hint = self.small_font.render(
+            '↑↓ — выбор   Enter — подтвердить', True, (160, 160, 160)
+        )
+        self.screen.blit(hint, hint.get_rect(center=(self.width // 2, self.height - 70)))
 
-        info = self.small_font.render('Use UP/DOWN to select, ENTER to start', True, (200, 200, 200))
-        info_rect = info.get_rect(center=(self.width//2, self.height - 100))
-        self.screen.blit(info, info_rect)
-
-        pygame.display.flip()
+    def _draw_records(self, highscore):
+        """Экран лучшего счёта."""
+        rec = self.font.render(f'Рекорд: {highscore}', True, (120, 255, 180))
+        self.screen.blit(rec, rec.get_rect(center=(self.width // 2, self.height // 2)))
+        back = self.small_font.render('Enter — назад', True, (180, 180, 180))
+        self.screen.blit(back, back.get_rect(center=(self.width // 2, self.height // 2 + 60)))
 
     def handle_event(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                self.selected = (self.selected - 1) % len(self.options)
-            elif event.key == pygame.K_DOWN:
-                self.selected = (self.selected + 1) % len(self.options)
-            elif event.key == pygame.K_RETURN:
-                return self.selected  # 0,1,2
+        """Обрабатывает ввод. Возвращает действие или None."""
+        if event.type != pygame.KEYDOWN:
+            return None
+        if self.mode == 'records':
+            if event.key in (pygame.K_RETURN, pygame.K_ESCAPE, pygame.K_BACKSPACE):
+                self.mode = 'main'
+            return None
+        if event.key == pygame.K_UP:
+            self.selected = (self.selected - 1) % len(self.main_options)
+        elif event.key == pygame.K_DOWN:
+            self.selected = (self.selected + 1) % len(self.main_options)
+        elif event.key == pygame.K_RETURN:
+            if self.selected <= 2:
+                return ('start', self.selected)
+            if self.selected == 3:
+                self.mode = 'records'
+            if self.selected == 4:
+                return 'quit'
         return None
-
-    def run(self):
-        while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-                selected_level = self.handle_event(event)
-                if selected_level is not None:
-                    return selected_level
-            self.draw()
-            pygame.time.delay(30)
