@@ -52,9 +52,7 @@ THEMES = [
      "weak": (255, 180, 50), "strong": (220, 120, 20)},
 ]
 
-
 def _grid_geometry(width):
-    """Считает стартовую позицию и шаг сетки блоков по ширине экрана."""
     margin = 10
     gap_x = BRICK_GAP_X
     gap_y = BRICK_GAP_Y
@@ -66,9 +64,7 @@ def _grid_geometry(width):
     start_x = (width - total_w) // 2
     return start_x, bw, bh, gap_x, gap_y, cols
 
-
 def _default_grid(width, height, strength_mode):
-    """Строит стандартную прямоугольную стену блоков."""
     start_x, bw, bh, gap_x, gap_y, cols = _grid_geometry(width)
     bricks = []
     rows = BRICK_ROWS
@@ -85,13 +81,10 @@ def _default_grid(width, height, strength_mode):
             bricks.append(Brick(x, y, bw, bh, s))
     return bricks
 
-
 def build_bricks_for_level(width, height, level_index, strength_mode):
-    """Создаёт список блоков для указанного уровня."""
     layout = LEVEL_LAYOUTS[level_index % len(LEVEL_LAYOUTS)]
     if layout is None:
         return _default_grid(width, height, strength_mode)
-
     start_x, bw, bh, gap_x, gap_y, max_cols = _grid_geometry(width)
     bricks = []
     for row_idx, row_str in enumerate(layout):
@@ -111,7 +104,5 @@ def build_bricks_for_level(width, height, level_index, strength_mode):
             bricks.append(Brick(x, y, bw, bh, strength))
     return bricks
 
-
 def get_theme(level_index):
-    """Возвращает палитру уровня."""
     return THEMES[level_index % len(THEMES)]

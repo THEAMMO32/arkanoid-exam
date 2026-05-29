@@ -1,10 +1,7 @@
 import random
 from utils.constants import PARTICLE_LIFETIME
 
-
 class Particle:
-    """Осколок при разрушении блока."""
-
     def __init__(self, x, y, color):
         self.x = x
         self.y = y
@@ -16,7 +13,6 @@ class Particle:
         self.max_life = PARTICLE_LIFETIME
 
     def update(self, dt):
-        """Сдвигает частицу и уменьшает время жизни."""
         self.x += self.vx * dt
         self.y += self.vy * dt
         self.vy += 400 * dt

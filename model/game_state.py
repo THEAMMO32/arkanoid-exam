@@ -6,10 +6,7 @@ from model.particle import Particle
 from utils.constants import *
 from utils.level_loader import build_bricks_for_level, get_theme
 
-
 class GameState:
-    """Состояние одной игровой сессии."""
-
     def __init__(self, width, height, difficulty=1, level_index=0,
                  highscore=0, speed_mul=1.0):
         self.width = width
@@ -64,14 +61,12 @@ class GameState:
         return len(self.get_alive_bricks()) == 0
 
     def spawn_particles(self, brick, color):
-        """Создаёт осколки в центре блока."""
         cx = brick.x + brick.width / 2
         cy = brick.y + brick.height / 2
         for _ in range(PARTICLE_COUNT):
             self.particles.append(Particle(cx, cy, color))
 
     def maybe_drop_powerup(self, brick):
-        """С шансом создаёт бонус на месте блока."""
         if random.random() > POWERUP_DROP_CHANCE:
             return
         cx = brick.x + brick.width / 2
@@ -80,7 +75,6 @@ class GameState:
         self.powerups.append(PowerUp(cx, cy, kind))
 
     def apply_powerup(self, kind):
-        """Применяет эффект подобранного бонуса."""
         if kind == POWERUP_WIDEN:
             self.paddle.widen(PADDLE_WIDE_BONUS, self.width)
             self.wide_timer = POWERUP_DURATION
@@ -91,7 +85,6 @@ class GameState:
             self.slow_timer = POWERUP_DURATION
 
     def update_timers(self, dt):
-        """Уменьшает таймеры эффектов и перехода уровня."""
         if self.invincibility_timer > 0:
             self.invincibility_timer -= dt
         if self.wide_timer > 0:
@@ -115,7 +108,6 @@ class GameState:
         self.particles = alive_p
 
     def reset_ball_paddle(self):
-        """Возвращает мяч и платформу в стартовую позицию."""
         self.ball.x = self.width // 2
         self.ball.y = self.height - PADDLE_HEIGHT - 20
         if self.slow_timer > 0:
@@ -127,7 +119,6 @@ class GameState:
         self.paddle.x = self.width // 2 - self.paddle.width // 2
 
     def lose_life(self):
-        """Отнимает жизнь и включает кратковременную неуязвимость."""
         self.lives -= 1
         if self.lives <= 0:
             self.state = STATE_GAME_OVER
@@ -136,7 +127,6 @@ class GameState:
             self.invincibility_timer = INVINCIBILITY_DURATION
 
     def advance_level(self):
-        """Переходит к следующему уровню или финальной победе."""
         next_level = self.level_index + 1
         if next_level >= LEVEL_COUNT:
             self.state = STATE_WIN
