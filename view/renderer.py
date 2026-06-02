@@ -27,13 +27,14 @@ class Renderer:
         self.screen.fill(theme['bg'])
 
         # След мяча
-        for i, (tx, ty) in enumerate(game_state.ball.trail):
-            alpha = int(40 + 140 * (i + 1) / max(1, len(game_state.ball.trail)))
-            r = game_state.ball.radius - 1
-            surf = pygame.Surface((r * 2, r * 2), pygame.SRCALPHA)
-            c = (*theme['ball'], alpha)
-            pygame.draw.circle(surf, c, (r, r), r)
-            self.screen.blit(surf, (tx - r, ty - r))
+        for ball in game_state.balls:
+            for i, (tx, ty) in enumerate(ball.trail):
+                alpha = int(40 + 140 * (i + 1) / max(1, len(ball.trail)))
+                r = ball.radius - 1
+                surf = pygame.Surface((r * 2, r * 2), pygame.SRCALPHA)
+                c = (*theme['ball'], alpha)
+                pygame.draw.circle(surf, c, (r, r), r)
+                self.screen.blit(surf, (tx - r, ty - r))
 
         # Блоки
         for brick in game_state.bricks:
@@ -82,9 +83,10 @@ class Renderer:
                 paddle_color = tuple(min(255, c + 80) for c in paddle_color)
         pygame.draw.rect(self.screen, paddle_color, prect, border_radius=4)
 
-        # Мяч
-        brect = game_state.ball.get_rect()
-        pygame.draw.ellipse(self.screen, theme['ball'], brect)
+        # Мячи
+        for ball in game_state.balls:
+            brect = ball.get_rect()
+            pygame.draw.ellipse(self.screen, theme['ball'], brect)
 
         # Текстовая информация
         score_txt = self.font.render(f"Счёт: {game_state.score}", True, WHITE)

@@ -2,25 +2,28 @@ from utils.constants import *
 
 
 class PowerUp:
-    """Падающий бонус."""
+    """Падающий бонус с красивой иконкой."""
 
     COLORS = {
-        POWERUP_WIDEN: (100, 200, 255),
-        POWERUP_LIFE: (255, 80, 120),
-        POWERUP_SLOW: (180, 255, 100),
+        POWERUP_WIDEN: (60, 180, 255),
+        POWERUP_LIFE: (255, 60, 100),
+        POWERUP_SLOW: (120, 255, 120),
+        POWERUP_MULTI: (255, 200, 40),
     }
 
+    # Символы юникода для красивых иконок
     LABELS = {
-        POWERUP_WIDEN: 'W',
-        POWERUP_LIFE: '+',
-        POWERUP_SLOW: 'S',
+        POWERUP_WIDEN: '⇔',    # расширение платформы
+        POWERUP_LIFE: '♥',     # дополнительная жизнь
+        POWERUP_SLOW: '▼',     # замедление
+        POWERUP_MULTI: '✦',    # несколько мячей
     }
 
     def __init__(self, x, y, kind):
         self.x = x
         self.y = y
         self.kind = kind
-        self.size = POWERUP_SIZE
+        self.size = 16  # увеличен размер для читаемой иконки
         self.alive = True
 
     def move(self, dt):

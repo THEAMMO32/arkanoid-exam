@@ -44,12 +44,12 @@ class GameState:
 
         bx = BALL_SPEED_X * speed_mul
         by = BALL_SPEED_Y * speed_mul
-        self.ball = Ball(
+        self.balls = [Ball(
             width // 2,
             height - PADDLE_HEIGHT - 20,
             BALL_RADIUS,
             bx, by
-        )
+        )]
         self.bricks = build_bricks_for_level(
             width, height, level_index, self.strength_mode
         )
@@ -74,7 +74,7 @@ class GameState:
             return
         cx = brick.x + brick.width / 2
         cy = brick.y + brick.height / 2
-        kind = random.choice([POWERUP_WIDEN, POWERUP_LIFE, POWERUP_SLOW])
+        kind = random.choice([POWERUP_WIDEN, POWERUP_LIFE, POWERUP_SLOW, POWERUP_MULTI])
         self.powerups.append(PowerUp(cx, cy, kind))
 
     def apply_powerup(self, kind):
@@ -84,8 +84,19 @@ class GameState:
         elif kind == POWERUP_LIFE:
             self.lives += 1
         elif kind == POWERUP_SLOW:
-            self.ball.apply_slow()
+            for ball in self.balls:
+                ball.apply_slow()
             self.slow_timer = POWERUP_DURATION
+        elif kind == POWERUP_MULTI:
+            # Создать копию случайного существующего мяча
+            if self.balls:
+                src = random.choice(self.balls)
+                bx = BALL_SPEED_X * self.speed_mul
+                by = BALL_SPEED_Y * self.speed_mul
+                new_ball = Ball(src.x, src.y, BALL_RADIUS, bx, by)
+                if self.slow_timer > 0:
+                    new_ball.apply_slow()
+                self.balls.append(new_ball)
 
     def update_timers(self, dt):
         if self.invincibility_timer > 0:
@@ -97,7 +108,8 @@ class GameState:
         if self.slow_timer > 0:
             self.slow_timer -= dt
             if self.slow_timer <= 0:
-                self.ball.restore_speed()
+                for ball in self.balls:
+                    ball.restore_speed()
         if self.state == STATE_LEVEL_CLEAR:
             self.level_clear_timer -= dt
             if self.level_clear_timer <= 0:
@@ -111,14 +123,16 @@ class GameState:
         self.particles = alive_p
 
     def reset_ball_paddle(self):
-        self.ball.x = self.width // 2
-        self.ball.y = self.height - PADDLE_HEIGHT - 20
+        bx = BALL_SPEED_X * self.speed_mul
+        by = BALL_SPEED_Y * self.speed_mul
+        self.balls = [Ball(
+            self.width // 2,
+            self.height - PADDLE_HEIGHT - 20,
+            BALL_RADIUS,
+            bx, by
+        )]
         if self.slow_timer > 0:
-            self.ball.apply_slow()
-        else:
-            bx = BALL_SPEED_X * self.speed_mul
-            by = BALL_SPEED_Y * self.speed_mul
-            self.ball.set_speed(bx, by)
+            self.balls[0].apply_slow()
         self.paddle.x = self.width // 2 - self.paddle.width // 2
 
     def lose_life(self):
@@ -145,7 +159,12 @@ class GameState:
         self.speed_mul *= 1.06
         bx = BALL_SPEED_X * self.speed_mul
         by = BALL_SPEED_Y * self.speed_mul
-        self.ball.set_speed(bx, by)
+        self.balls = [Ball(
+            self.width // 2,
+            self.height - PADDLE_HEIGHT - 20,
+            BALL_RADIUS,
+            bx, by
+        )]
         self.reset_ball_paddle()
         self.state = STATE_LEVEL_CLEAR
         self.level_clear_timer = LEVEL_CLEAR_DELAY

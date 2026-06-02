@@ -44,8 +44,8 @@ LEVEL_LAYOUTS = [
 THEMES = [
     {"bg": (15, 20, 45), "ball": (255, 120, 80), "paddle": (200, 200, 220),
      "weak": (60, 180, 255), "strong": (30, 90, 200)},
-    {"bg": (25, 15, 35), "ball": (255, 200, 60), "paddle": (220, 180, 140),
-     "weak": (255, 170, 40), "strong": (200, 80, 20)},
+    {"bg": (10, 8, 28), "ball": (255, 220, 50), "paddle": (180, 150, 220),
+     "weak": (200, 100, 255), "strong": (120, 30, 200)},
     {"bg": (40, 15, 35), "ball": (255, 150, 200), "paddle": (220, 180, 200),
      "weak": (255, 100, 150), "strong": (180, 40, 90)},
     {"bg": (25, 25, 30), "ball": (180, 255, 255), "paddle": (200, 200, 200),
@@ -151,25 +151,24 @@ def build_walls_for_level(width, height, difficulty, level_index):
         return walls
 
     start_x, bw, bh, gap_x, gap_y, cols = _grid_geometry(width)
-    rows = 8
+    pad = 2  # отступ стенки от блоков с каждой стороны
 
-    # Стенки размещаются МЕЖДУ рядами блоков и МЕЖДУ колонками
     # Горизонтальная стенка между 3-м и 4-м рядами блоков
-    h_wall_h = gap_y  # толщина = размер зазора
+    h_wall_h = gap_y - pad * 2
     h_wall_w = cols * (bw + gap_x) - gap_x  # на всю ширину сетки
     h_wall_x = start_x
-    h_wall_y = BRICK_OFFSET_Y + 3 * (bh + gap_y) + bh  # после 3-го ряда
+    h_wall_y = BRICK_OFFSET_Y + 3 * (bh + gap_y) + bh + pad
     walls.append(Wall(h_wall_x, h_wall_y, h_wall_w, h_wall_h))
 
-    # Вертикальная стенка по центру между колонками
-    v_wall_w = gap_x
-    v_wall_h = 3 * (bh + gap_y)  # через первые 3 ряда
-    v_wall_x = start_x + (cols // 2) * (bw + gap_x)  # между центральными колонками
-    v_wall_y = BRICK_OFFSET_Y
+    # Вертикальная стенка по центру через верхние 3 ряда
+    v_wall_w = gap_x - pad * 2
+    v_wall_h = 3 * (bh + gap_y) - pad * 2
+    v_wall_x = start_x + (cols // 2) * (bw + gap_x) + pad
+    v_wall_y = BRICK_OFFSET_Y + pad
     walls.append(Wall(v_wall_x, v_wall_y, v_wall_w, v_wall_h))
 
-    # Ещё одна вертикальная стенка в нижних 3 рядах
-    v_wall_y2 = h_wall_y + h_wall_h
+    # Ещё одна вертикальная стенка через нижние ряды
+    v_wall_y2 = h_wall_y + h_wall_h + pad
     walls.append(Wall(v_wall_x, v_wall_y2, v_wall_w, v_wall_h))
 
     return walls
