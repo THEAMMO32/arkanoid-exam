@@ -44,8 +44,8 @@ LEVEL_LAYOUTS = [
 THEMES = [
     {"bg": (15, 20, 45), "ball": (255, 120, 80), "paddle": (200, 200, 220),
      "weak": (60, 180, 255), "strong": (30, 90, 200)},
-    {"bg": (20, 35, 25), "ball": (255, 220, 100), "paddle": (180, 220, 180),
-     "weak": (100, 220, 120), "strong": (50, 140, 70)},
+    {"bg": (25, 15, 35), "ball": (255, 200, 60), "paddle": (220, 180, 140),
+     "weak": (255, 170, 40), "strong": (200, 80, 20)},
     {"bg": (40, 15, 35), "ball": (255, 150, 200), "paddle": (220, 180, 200),
      "weak": (255, 100, 150), "strong": (180, 40, 90)},
     {"bg": (25, 25, 30), "ball": (180, 255, 255), "paddle": (200, 200, 200),
@@ -96,11 +96,29 @@ def _build_easy_grid(width, height):
             bricks.append(Brick(x, y, bw, bh, strength=1))
     return bricks
 
+
+def _build_medium_grid(width, height):
+    """Средний уровень: 8 рядов, верхние — слабые, нижние — прочные, все заполнены."""
+    start_x, bw, bh, gap_x, gap_y, cols = _grid_geometry(width)
+    bricks = []
+    rows = 8
+    for row in range(rows):
+        # Нижние 2 ряда — прочные (strength=2), остальные — 1
+        s = 2 if row >= rows - 3 else 1
+        for col in range(cols):
+            x = start_x + col * (bw + gap_x)
+            y = BRICK_OFFSET_Y + row * (bh + gap_y)
+            bricks.append(Brick(x, y, bw, bh, s))
+    return bricks
+
 def build_bricks_for_level(width, height, level_index, strength_mode):
     layout = LEVEL_LAYOUTS[level_index % len(LEVEL_LAYOUTS)]
     # Easy difficulty (all_weak): use a denser brick layout
     if strength_mode == 'all_weak' and level_index == 0:
         return _build_easy_grid(width, height)
+    # Medium difficulty (default): denser layout with mixed strength
+    if strength_mode == 'default' and level_index == 0:
+        return _build_medium_grid(width, height)
     if layout is None:
         return _default_grid(width, height, strength_mode)
     start_x, bw, bh, gap_x, gap_y, max_cols = _grid_geometry(width)
@@ -132,26 +150,26 @@ def build_walls_for_level(width, height, difficulty, level_index):
     if difficulty != 1 or level_index != 0:
         return walls
 
-    _, bw, bh, _, _, max_cols = _grid_geometry(width)
-    wall_h = bh
-    wall_w = bw * 2  # ширина одной стенки = 2 кирпича
+    start_x, bw, bh, gap_x, gap_y, cols = _grid_geometry(width)
+    rows = 8
 
-    # Две вертикальные стенки по бокам и одна горизонтальная по центру
-    # Вертикальные — как тонкие столбы
-    v_wall_w = 12
-    left_x = 60
-    right_x = width - 60 - v_wall_w
-    v_wall_y = BRICK_OFFSET_Y + bh + 60
-    v_wall_h = bh * 3
-
-    walls.append(Wall(left_x, v_wall_y, v_wall_w, v_wall_h))
-    walls.append(Wall(right_x, v_wall_y, v_wall_w, v_wall_h))
-
-    # Горизонтальная стенка по центру
-    h_wall_w = bw * 3
-    h_wall_h = 12
-    h_wall_x = (width - h_wall_w) // 2
-    h_wall_y = BRICK_OFFSET_Y + bh * 3 + 40
+    # Стенки размещаются МЕЖДУ рядами блоков и МЕЖДУ колонками
+    # Горизонтальная стенка между 3-м и 4-м рядами блоков
+    h_wall_h = gap_y  # толщина = размер зазора
+    h_wall_w = cols * (bw + gap_x) - gap_x  # на всю ширину сетки
+    h_wall_x = start_x
+    h_wall_y = BRICK_OFFSET_Y + 3 * (bh + gap_y) + bh  # после 3-го ряда
     walls.append(Wall(h_wall_x, h_wall_y, h_wall_w, h_wall_h))
+
+    # Вертикальная стенка по центру между колонками
+    v_wall_w = gap_x
+    v_wall_h = 3 * (bh + gap_y)  # через первые 3 ряда
+    v_wall_x = start_x + (cols // 2) * (bw + gap_x)  # между центральными колонками
+    v_wall_y = BRICK_OFFSET_Y
+    walls.append(Wall(v_wall_x, v_wall_y, v_wall_w, v_wall_h))
+
+    # Ещё одна вертикальная стенка в нижних 3 рядах
+    v_wall_y2 = h_wall_y + h_wall_h
+    walls.append(Wall(v_wall_x, v_wall_y2, v_wall_w, v_wall_h))
 
     return walls

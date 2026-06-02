@@ -83,9 +83,18 @@ class GameController:
                 if not rect_collision(ball_rect, brick.get_rect()):
                     continue
                 side = get_collision_side(ball_rect, brick.get_rect())
-                if side in ('left', 'right'):
+                r = gs.ball.radius
+                if side == 'left':
+                    gs.ball.x = brick.x - r
                     gs.ball.bounce_x()
-                else:
+                elif side == 'right':
+                    gs.ball.x = brick.x + brick.width + r
+                    gs.ball.bounce_x()
+                elif side == 'top':
+                    gs.ball.y = brick.y - r
+                    gs.ball.bounce_y()
+                elif side == 'bottom':
+                    gs.ball.y = brick.y + brick.height + r
                     gs.ball.bounce_y()
                 was_strong = brick.strength > 1
                 destroyed = brick.hit()

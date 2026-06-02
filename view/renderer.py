@@ -89,12 +89,8 @@ class Renderer:
         # Текстовая информация
         score_txt = self.font.render(f"Счёт: {game_state.score}", True, WHITE)
         lives_txt = self.font.render(f"Жизни: {game_state.lives}", True, WHITE)
-        lvl_txt = self.font.render(
-            f"Уровень: {game_state.level_index + 1}/{LEVEL_COUNT}", True, WHITE
-        )
         self.screen.blit(score_txt, (10, 10))
         self.screen.blit(lives_txt, (10, 50))
-        self.screen.blit(lvl_txt, (10, 90))
         best_txt = self.font.render(f"Рекорд: {game_state.highscore}", True, WHITE)
         self.screen.blit(best_txt, (self.width - 180, 10))
 
