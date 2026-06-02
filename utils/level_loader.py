@@ -148,23 +148,42 @@ def get_theme(level_index):
 
 
 def build_walls_for_level(width, height, difficulty, level_index):
-    """Создаёт неразрушаемые стенки. Только для среднего уровня (difficulty=1)."""
+    """Создаёт неразрушаемые стенки. Только для среднего уровня (difficulty=1).
+    
+    Крестообразная фигура: 2 вертикальные + 2 горизонтальные стенки
+    с проходами для мяча между ними.
+    """
     walls = []
     if difficulty != 1 or level_index != 0:
         return walls
 
     start_x, bw, bh, gap_x, gap_y, cols = _grid_geometry(width)
-    t = WALL_THICKNESS  # 8px — надёжная толщина
+    rows = 8
+    t = WALL_THICKNESS
+    grid_w = cols * (bw + gap_x) - gap_x  # полная ширина сетки
+    grid_h = rows * (bh + gap_y) - gap_y   # полная высота сетки
 
-    # Две горизонтальные стенки между рядами блоков.
-    # Ряды 0-7, стенка между 2 и 3, и между 5 и 6.
-    # После строки row_index = 2 (3-й ряд) и row_index = 5 (6-й ряд).
-    h_wall_w = cols * (bw + gap_x) + t  # немного шире сетки для аккуратного вида
-    h_wall_x = start_x - t // 2
+    # --- Вертикальные стенки (2 штуки) ---
+    # Проход между ними = ~1/3 ширины сетки
+    v_gap = grid_w // 3  # зазор между вертикальными стенками
+    v1_x = start_x + (grid_w // 3)          # левая вертикальная
+    v2_x = start_x + (grid_w * 2 // 3) - t  # правая вертикальная
+    v_top = BRICK_OFFSET_Y
+    v_h = grid_h  # на всю высоту сетки кирпичей
+    walls.append(Wall(v1_x, v_top, t, v_h))
+    walls.append(Wall(v2_x, v_top, t, v_h))
 
-    for row_after in (2, 5):
-        # y = начало + количество рядов до стенки + их высота + отступ
-        y = BRICK_OFFSET_Y + (row_after + 1) * bh + row_after * gap_y + (gap_y - t) // 2
-        walls.append(Wall(h_wall_x, y, h_wall_w, t))
+    # --- Горизонтальные стенки (2 штуки на одном Y) ---
+    # Y = середина сетки (между 4 и 5 рядами)
+    h_y = BRICK_OFFSET_Y + 4 * (bh + gap_y) - gap_y // 2
+    # Левая горизонтальная: от начала до левой вертикальной (с зазором)
+    h_gap = bw  # зазор между горизонтальной и вертикальной стенкой
+    h1_x = start_x
+    h1_w = v1_x - start_x - h_gap
+    walls.append(Wall(h1_x, h_y, h1_w, t))
+    # Правая горизонтальная: от правой вертикальной (с зазором) до конца
+    h2_x = v2_x + t + h_gap
+    h2_w = start_x + grid_w - h2_x
+    walls.append(Wall(h2_x, h_y, h2_w, t))
 
     return walls

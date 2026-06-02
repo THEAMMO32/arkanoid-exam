@@ -122,7 +122,8 @@ class GameController:
                     break
 
     def _handle_wall_collisions(self):
-        """Обработка столкновений мяча с неразрушаемыми стенками."""
+        """Обработка столкновений мяча с неразрушаемыми стенками.
+        Каждый мяч отскакивает только от одной стенки за кадр."""
         gs = self.game_state
         for ball in gs.balls:
             for wall in gs.walls:
@@ -145,6 +146,7 @@ class GameController:
                     ball.bounce_y()
                 if self.audio:
                     self.audio.play_brick(strong=True)
+                break  # один отскок за кадр
 
     def _update_powerups(self, dt):
         gs = self.game_state
