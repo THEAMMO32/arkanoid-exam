@@ -122,31 +122,43 @@ class GameController:
                     break
 
     def _handle_wall_collisions(self):
-        """Обработка столкновений мяча с неразрушаемыми стенками.
-        Каждый мяч отскакивает только от одной стенки за кадр."""
+        """Pixel-perfect ball-to-wall collision with overlap-based axis
+        determination, velocity-based push-out, and single-bounce per frame."""
         gs = self.game_state
+        r = BALL_RADIUS
         for ball in gs.balls:
+            bl = ball.x - r
+            br = ball.x + r
+            bt = ball.y - r
+            bb = ball.y + r
             for wall in gs.walls:
-                wall_rect = wall.get_rect()
-                if not rect_collision(ball.get_rect(), wall_rect):
+                wl, wt, ww, wh = wall.get_rect()
+                wr = wl + ww
+                wb = wt + wh
+                # AABB overlap test
+                if br <= wl or bl >= wr or bb <= wt or bt >= wb:
                     continue
-                side = get_collision_side(ball.get_rect(), wall_rect)
-                r = ball.radius
-                if side == 'left':
-                    ball.x = wall_rect[0] - r
+                # Overlap depths on both axes
+                overlap_x = min(br, wr) - max(bl, wl)
+                overlap_y = min(bb, wb) - max(bt, wt)
+                # Push-out + bounce based on overlap axis and velocity direction
+                if overlap_x < overlap_y:
+                    # Horizontal hit
+                    if ball.vx > 0:
+                        ball.x = wl - r      # ball.right = wall.left
+                    elif ball.vx < 0:
+                        ball.x = wr + r      # ball.left = wall.right
                     ball.bounce_x()
-                elif side == 'right':
-                    ball.x = wall_rect[0] + wall_rect[2] + r
-                    ball.bounce_x()
-                elif side == 'top':
-                    ball.y = wall_rect[1] - r
-                    ball.bounce_y()
-                elif side == 'bottom':
-                    ball.y = wall_rect[1] + wall_rect[3] + r
+                else:
+                    # Vertical hit
+                    if ball.vy > 0:
+                        ball.y = wt - r      # ball.bottom = wall.top
+                    elif ball.vy < 0:
+                        ball.y = wb + r      # ball.top = wall.bottom
                     ball.bounce_y()
                 if self.audio:
                     self.audio.play_brick(strong=True)
-                break  # один отскок за кадр
+                break  # ONLY ONE wall collision per frame
 
     def _update_powerups(self, dt):
         gs = self.game_state
