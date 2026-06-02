@@ -1,6 +1,9 @@
+import math
 from model.brick import Brick
 from model.wall import Wall
 from utils.constants import *
+
+WALL_THICKNESS = 8  # толщина стенки для надёжного отскока
 
 LEVEL_LAYOUTS = [
     None,
@@ -44,8 +47,8 @@ LEVEL_LAYOUTS = [
 THEMES = [
     {"bg": (15, 20, 45), "ball": (255, 120, 80), "paddle": (200, 200, 220),
      "weak": (60, 180, 255), "strong": (30, 90, 200)},
-    {"bg": (10, 8, 28), "ball": (255, 220, 50), "paddle": (180, 150, 220),
-     "weak": (200, 100, 255), "strong": (120, 30, 200)},
+    {"bg": (8, 10, 30), "ball": (255, 80, 200), "paddle": (220, 120, 200),
+     "weak": (80, 255, 200), "strong": (20, 200, 140)},
     {"bg": (40, 15, 35), "ball": (255, 150, 200), "paddle": (220, 180, 200),
      "weak": (255, 100, 150), "strong": (180, 40, 90)},
     {"bg": (25, 25, 30), "ball": (180, 255, 255), "paddle": (200, 200, 200),
@@ -145,30 +148,23 @@ def get_theme(level_index):
 
 
 def build_walls_for_level(width, height, difficulty, level_index):
-    """Создаёт неразрушаемые стенки. Пока только для среднего уровня (difficulty=1)."""
+    """Создаёт неразрушаемые стенки. Только для среднего уровня (difficulty=1)."""
     walls = []
     if difficulty != 1 or level_index != 0:
         return walls
 
     start_x, bw, bh, gap_x, gap_y, cols = _grid_geometry(width)
-    pad = 2  # отступ стенки от блоков с каждой стороны
+    t = WALL_THICKNESS  # 8px — надёжная толщина
 
-    # Горизонтальная стенка между 3-м и 4-м рядами блоков
-    h_wall_h = gap_y - pad * 2
-    h_wall_w = cols * (bw + gap_x) - gap_x  # на всю ширину сетки
-    h_wall_x = start_x
-    h_wall_y = BRICK_OFFSET_Y + 3 * (bh + gap_y) + bh + pad
-    walls.append(Wall(h_wall_x, h_wall_y, h_wall_w, h_wall_h))
+    # Две горизонтальные стенки между рядами блоков.
+    # Ряды 0-7, стенка между 2 и 3, и между 5 и 6.
+    # После строки row_index = 2 (3-й ряд) и row_index = 5 (6-й ряд).
+    h_wall_w = cols * (bw + gap_x) + t  # немного шире сетки для аккуратного вида
+    h_wall_x = start_x - t // 2
 
-    # Вертикальная стенка по центру через верхние 3 ряда
-    v_wall_w = gap_x - pad * 2
-    v_wall_h = 3 * (bh + gap_y) - pad * 2
-    v_wall_x = start_x + (cols // 2) * (bw + gap_x) + pad
-    v_wall_y = BRICK_OFFSET_Y + pad
-    walls.append(Wall(v_wall_x, v_wall_y, v_wall_w, v_wall_h))
-
-    # Ещё одна вертикальная стенка через нижние ряды
-    v_wall_y2 = h_wall_y + h_wall_h + pad
-    walls.append(Wall(v_wall_x, v_wall_y2, v_wall_w, v_wall_h))
+    for row_after in (2, 5):
+        # y = начало + количество рядов до стенки + их высота + отступ
+        y = BRICK_OFFSET_Y + (row_after + 1) * bh + row_after * gap_y + (gap_y - t) // 2
+        walls.append(Wall(h_wall_x, y, h_wall_w, t))
 
     return walls
