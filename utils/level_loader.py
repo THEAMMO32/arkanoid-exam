@@ -149,9 +149,11 @@ def get_theme(level_index):
 
 def build_walls_for_level(width, height, difficulty, level_index):
     """Создаёт неразрушаемые стенки. Только для среднего уровня (difficulty=1).
-    
-    Крестообразная фигура: 2 вертикальные + 2 горизонтальные стенки
-    с проходами для мяча между ними.
+
+    Крестообразная фигура из 4 стенок:
+    - 2 вертикальные стенки точно в зазорах между колонками на 1/3 и 2/3 сетки
+    - 2 горизонтальные стенки точно в зазоре между рядами 4 и 5,
+      с отступами от краёв экрана (ball_diameter + 10px)
     """
     walls = []
     if difficulty != 1 or level_index != 0:
@@ -160,30 +162,33 @@ def build_walls_for_level(width, height, difficulty, level_index):
     start_x, bw, bh, gap_x, gap_y, cols = _grid_geometry(width)
     rows = 8
     t = WALL_THICKNESS
-    grid_w = cols * (bw + gap_x) - gap_x  # полная ширина сетки
-    grid_h = rows * (bh + gap_y) - gap_y   # полная высота сетки
+    edge_gap = BALL_RADIUS * 2 + 10  # clearance = ball_diameter + 10px
 
-    # --- Вертикальные стенки (2 штуки) ---
-    # Проход между ними = ~1/3 ширины сетки
-    v_gap = grid_w // 3  # зазор между вертикальными стенками
-    v1_x = start_x + (grid_w // 3)          # левая вертикальная
-    v2_x = start_x + (grid_w * 2 // 3) - t  # правая вертикальная
+    # --- Вертикальные стенки ---
+    # Точно в зазорах между колонками cols//3 и cols//3+1,
+    # и между cols*2//3 и cols*2//3+1
+    col_1 = cols // 3
+    col_2 = cols * 2 // 3
+    v1_x = start_x + col_1 * (bw + gap_x) + bw + (gap_x - t) // 2
+    v2_x = start_x + col_2 * (bw + gap_x) + bw + (gap_x - t) // 2
     v_top = BRICK_OFFSET_Y
-    v_h = grid_h  # на всю высоту сетки кирпичей
+    v_h = rows * (bh + gap_y) - gap_y
     walls.append(Wall(v1_x, v_top, t, v_h))
     walls.append(Wall(v2_x, v_top, t, v_h))
 
     # --- Горизонтальные стенки (2 штуки на одном Y) ---
-    # Y = середина сетки (между 4 и 5 рядами)
-    h_y = BRICK_OFFSET_Y + 4 * (bh + gap_y) - gap_y // 2
-    # Левая горизонтальная: от начала до левой вертикальной (с зазором)
-    h_gap = bw  # зазор между горизонтальной и вертикальной стенкой
-    h1_x = start_x
-    h1_w = v1_x - start_x - h_gap
-    walls.append(Wall(h1_x, h_y, h1_w, t))
-    # Правая горизонтальная: от правой вертикальной (с зазором) до конца
-    h2_x = v2_x + t + h_gap
-    h2_w = start_x + grid_w - h2_x
-    walls.append(Wall(h2_x, h_y, h2_w, t))
+    # Точно в зазоре между рядами 4 и 5 (row_after=4)
+    row_after = 4
+    h_y = BRICK_OFFSET_Y + row_after * (bh + gap_y) + bh + (gap_y - t) // 2
+
+    # Зазор между горизонтальной и вертикальной стенкой
+    h_clear = bw + gap_x  # один блок + зазор — достаточно для мяча
+    # Отступ от краёв экрана = edge_gap
+    h1_x = start_x + edge_gap
+    h1_w = v1_x - h1_x - h_clear
+    h2_x = v2_x + t + h_clear
+    h2_w = start_x + cols * (bw + gap_x) - gap_x - h2_x - edge_gap
+    walls.append(Wall(h1_x, h_y, max(h1_w, t), t))
+    walls.append(Wall(h2_x, h_y, max(h2_w, t), t))
 
     return walls

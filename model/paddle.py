@@ -22,10 +22,12 @@ class Paddle:
             self.x = boundary_right - self.width
 
     def reset_width(self):
+        """Revert completely back to the original base width."""
         self.width = self.base_width
 
     def widen(self, bonus, boundary_right):
-        self.set_width(self.base_width + bonus, boundary_right)
+        """Progressive widen: add bonus to CURRENT width (stackable)."""
+        self.set_width(self.width + bonus, boundary_right)
 
     def get_rect(self):
         return (self.x, self.y, self.width, self.height)

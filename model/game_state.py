@@ -80,7 +80,7 @@ class GameState:
     def apply_powerup(self, kind):
         if kind == POWERUP_WIDEN:
             self.paddle.widen(PADDLE_WIDE_BONUS, self.width)
-            self.wide_timer = POWERUP_DURATION
+            self.wide_timer += POWERUP_DURATION  # progressive stack
         elif kind == POWERUP_LIFE:
             self.lives += 1
         elif kind == POWERUP_SLOW:
