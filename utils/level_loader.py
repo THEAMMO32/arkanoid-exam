@@ -1,16 +1,18 @@
 from model.brick import Brick
+from model.wall import Wall
 from utils.constants import *
 
 LEVEL_LAYOUTS = [
     None,
     [
-        "000011110000",
-        "000111111000",
-        "001111111100",
-        "011111111110",
-        "001111111100",
-        "000111111000",
-        "000011110000",
+        "111111111111",
+        "111111111111",
+        "111111111111",
+        "111111111111",
+        "111111111111",
+        "111111111111",
+        "111111111111",
+        "111111111111",
     ],
     [
         "222222222222",
@@ -81,8 +83,24 @@ def _default_grid(width, height, strength_mode):
             bricks.append(Brick(x, y, bw, bh, s))
     return bricks
 
+
+def _build_easy_grid(width, height):
+    """Denser brick layout for easy difficulty — more rows, full width."""
+    start_x, bw, bh, gap_x, gap_y, cols = _grid_geometry(width)
+    bricks = []
+    rows = 8  # more rows than default 5
+    for row in range(rows):
+        for col in range(cols):
+            x = start_x + col * (bw + gap_x)
+            y = BRICK_OFFSET_Y + row * (bh + gap_y)
+            bricks.append(Brick(x, y, bw, bh, strength=1))
+    return bricks
+
 def build_bricks_for_level(width, height, level_index, strength_mode):
     layout = LEVEL_LAYOUTS[level_index % len(LEVEL_LAYOUTS)]
+    # Easy difficulty (all_weak): use a denser brick layout
+    if strength_mode == 'all_weak' and level_index == 0:
+        return _build_easy_grid(width, height)
     if layout is None:
         return _default_grid(width, height, strength_mode)
     start_x, bw, bh, gap_x, gap_y, max_cols = _grid_geometry(width)
@@ -106,3 +124,34 @@ def build_bricks_for_level(width, height, level_index, strength_mode):
 
 def get_theme(level_index):
     return THEMES[level_index % len(THEMES)]
+
+
+def build_walls_for_level(width, height, difficulty, level_index):
+    """Создаёт неразрушаемые стенки. Пока только для среднего уровня (difficulty=1)."""
+    walls = []
+    if difficulty != 1 or level_index != 0:
+        return walls
+
+    _, bw, bh, _, _, max_cols = _grid_geometry(width)
+    wall_h = bh
+    wall_w = bw * 2  # ширина одной стенки = 2 кирпича
+
+    # Две вертикальные стенки по бокам и одна горизонтальная по центру
+    # Вертикальные — как тонкие столбы
+    v_wall_w = 12
+    left_x = 60
+    right_x = width - 60 - v_wall_w
+    v_wall_y = BRICK_OFFSET_Y + bh + 60
+    v_wall_h = bh * 3
+
+    walls.append(Wall(left_x, v_wall_y, v_wall_w, v_wall_h))
+    walls.append(Wall(right_x, v_wall_y, v_wall_w, v_wall_h))
+
+    # Горизонтальная стенка по центру
+    h_wall_w = bw * 3
+    h_wall_h = 12
+    h_wall_x = (width - h_wall_w) // 2
+    h_wall_y = BRICK_OFFSET_Y + bh * 3 + 40
+    walls.append(Wall(h_wall_x, h_wall_y, h_wall_w, h_wall_h))
+
+    return walls

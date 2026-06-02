@@ -4,7 +4,7 @@ from model.paddle import Paddle
 from model.powerup import PowerUp
 from model.particle import Particle
 from utils.constants import *
-from utils.level_loader import build_bricks_for_level, get_theme
+from utils.level_loader import build_bricks_for_level, build_walls_for_level, get_theme
 
 class GameState:
     def __init__(self, width, height, difficulty=1, level_index=0,
@@ -52,6 +52,9 @@ class GameState:
         )
         self.bricks = build_bricks_for_level(
             width, height, level_index, self.strength_mode
+        )
+        self.walls = build_walls_for_level(
+            width, height, difficulty, level_index
         )
 
     def get_alive_bricks(self):
@@ -135,6 +138,9 @@ class GameState:
         self.theme = get_theme(self.level_index)
         self.bricks = build_bricks_for_level(
             self.width, self.height, self.level_index, self.strength_mode
+        )
+        self.walls = build_walls_for_level(
+            self.width, self.height, self.difficulty, self.level_index
         )
         self.speed_mul *= 1.06
         bx = BALL_SPEED_X * self.speed_mul

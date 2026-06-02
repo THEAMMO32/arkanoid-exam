@@ -57,6 +57,7 @@ class GameController:
         self._paddle_hit_cooldown -= dt
 
         self._handle_brick_collisions()
+        self._handle_wall_collisions()
         self._update_powerups(dt)
 
         if gs.state == STATE_RUNNING and gs.all_bricks_destroyed():
@@ -97,6 +98,30 @@ class GameController:
                     gs.maybe_drop_powerup(brick)
                 collision_occurred = True
                 break
+
+    def _handle_wall_collisions(self):
+        """Обработка столкновений мяча с неразрушаемыми стенками."""
+        gs = self.game_state
+        r = gs.ball.radius
+        for wall in gs.walls:
+            wall_rect = wall.get_rect()
+            if not rect_collision(gs.ball.get_rect(), wall_rect):
+                continue
+            side = get_collision_side(gs.ball.get_rect(), wall_rect)
+            if side == 'left':
+                gs.ball.x = wall_rect[0] - r
+                gs.ball.bounce_x()
+            elif side == 'right':
+                gs.ball.x = wall_rect[0] + wall_rect[2] + r
+                gs.ball.bounce_x()
+            elif side == 'top':
+                gs.ball.y = wall_rect[1] - r
+                gs.ball.bounce_y()
+            elif side == 'bottom':
+                gs.ball.y = wall_rect[1] + wall_rect[3] + r
+                gs.ball.bounce_y()
+            if self.audio:
+                self.audio.play_brick(strong=True)
 
     def _update_powerups(self, dt):
         gs = self.game_state

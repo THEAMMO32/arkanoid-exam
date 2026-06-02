@@ -1,6 +1,7 @@
 import pygame
 from view.colors import *
 from utils.constants import *
+from utils.constants import WALL_COLOR
 from model.powerup import PowerUp
 
 class Renderer:
@@ -40,6 +41,11 @@ class Renderer:
                 self._draw_shadow_rect(brick.get_rect(), 2)
                 color = theme['strong'] if brick.strength > 1 else theme['weak']
                 pygame.draw.rect(self.screen, color, brick.get_rect())
+
+        # Стенки (неразрушаемые)
+        for wall in game_state.walls:
+            self._draw_shadow_rect(wall.get_rect(), 2)
+            pygame.draw.rect(self.screen, WALL_COLOR, wall.get_rect(), border_radius=3)
 
         # Power-ups
         for pu in game_state.powerups:
