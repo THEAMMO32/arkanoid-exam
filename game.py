@@ -103,6 +103,12 @@ class Game:
             self.update_highscore()
             self._play_state_sounds()
 
+            # При победе — показать экран результатов
+            if self.game_state.state == STATE_WIN:
+                self.menu.set_results(self.game_state.score, self.highscore)
+                self.current_state = STATE_MENU
+                continue
+
             self.renderer.draw(self.game_state)
 
         pygame.quit()
@@ -117,6 +123,10 @@ class Game:
             action = self.menu.handle_event(event)
             if action == 'quit':
                 self.running = False
+                return
+            if action == 'back_to_menu':
+                self.menu.mode = 'main'
+                self.menu.selected = 0
                 return
             if isinstance(action, tuple) and action[0] == 'start':
                 self.start_game(action[1])

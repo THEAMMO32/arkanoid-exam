@@ -3,7 +3,7 @@ from utils.constants import *
 
 
 class Menu:
-    """Главное меню и экран рекордов."""
+    """Главное меню, экран рекордов и экран результатов."""
 
     def __init__(self, screen, width, height):
         self.screen = screen
@@ -11,8 +11,11 @@ class Menu:
         self.height = height
         self.font = pygame.font.Font(None, 52)
         self.small_font = pygame.font.Font(None, 32)
+        self.big_font = pygame.font.Font(None, 72)
         self.selected = 0
         self.mode = 'main'
+        self.results_score = 0
+        self.results_highscore = 0
         self.main_options = [
             'Легко',
             'Средне',
@@ -29,6 +32,10 @@ class Menu:
 
         if self.mode == 'records':
             self._draw_records(highscore)
+            return
+
+        if self.mode == 'results':
+            self._draw_results()
             return
 
         for i, option in enumerate(self.main_options):
@@ -50,9 +57,45 @@ class Menu:
         back = self.small_font.render('Enter — назад', True, (180, 180, 180))
         self.screen.blit(back, back.get_rect(center=(self.width // 2, self.height // 2 + 60)))
 
+    def _draw_results(self):
+        """Экран результатов матча."""
+        cy = self.height // 2 - 60
+
+        win_txt = self.big_font.render('ПОБЕДА!', True, (255, 220, 100))
+        self.screen.blit(win_txt, win_txt.get_rect(center=(self.width // 2, cy - 60)))
+
+        score_txt = self.font.render(f'Счёт: {self.results_score}', True, (255, 255, 255))
+        self.screen.blit(score_txt, score_txt.get_rect(center=(self.width // 2, cy)))
+
+        hs_color = (120, 255, 180) if self.results_score >= self.results_highscore else (200, 200, 200)
+        hs_txt = self.font.render(f'Рекорд: {self.results_highscore}', True, hs_color)
+        self.screen.blit(hs_txt, hs_txt.get_rect(center=(self.width // 2, cy + 50)))
+
+        if self.results_score >= self.results_highscore and self.results_score > 0:
+            new_txt = self.small_font.render('Новый рекорд!', True, (255, 220, 80))
+            self.screen.blit(new_txt, new_txt.get_rect(center=(self.width // 2, cy + 100)))
+
+        menu_txt = self.font.render('В главное меню', True, (255, 255, 80))
+        self.screen.blit(menu_txt, menu_txt.get_rect(center=(self.width // 2, cy + 160)))
+
+        hint = self.small_font.render('Enter — главное меню', True, (160, 160, 160))
+        self.screen.blit(hint, hint.get_rect(center=(self.width // 2, self.height - 50)))
+
+    def set_results(self, score, highscore):
+        """Устанавливает данные для экрана результатов."""
+        self.results_score = score
+        self.results_highscore = highscore
+        self.mode = 'results'
+
     def handle_event(self, event):
         """Обрабатывает ввод. Возвращает действие или None."""
         if event.type != pygame.KEYDOWN:
+            return None
+        if self.mode == 'results':
+            if event.key in (pygame.K_RETURN, pygame.K_ESCAPE):
+                self.mode = 'main'
+                self.selected = 0
+                return 'back_to_menu'
             return None
         if self.mode == 'records':
             if event.key in (pygame.K_RETURN, pygame.K_ESCAPE, pygame.K_BACKSPACE):

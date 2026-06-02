@@ -76,12 +76,9 @@ class GameController:
         self._update_powerups(dt)
 
         if gs.state == STATE_RUNNING and gs.all_bricks_destroyed():
-            advanced = gs.advance_level()
+            gs.state = STATE_WIN
             if self.audio:
-                if advanced:
-                    self.audio.play_level()
-                else:
-                    self.audio.play_win()
+                self.audio.play_win()
 
     def _handle_brick_collisions(self):
         gs = self.game_state
