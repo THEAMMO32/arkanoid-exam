@@ -42,6 +42,15 @@ LEVEL_LAYOUTS = [
         "111111111111",
         "111111111111",
     ],
+    [
+        "111111111111",
+        "222222222222",
+        "111100001111",
+        "000033330000",
+        "111100001111",
+        "222222222222",
+        "111111111111",
+    ],
 ]
 
 THEMES = [
@@ -57,10 +66,10 @@ THEMES = [
      "weak": (255, 180, 50), "strong": (220, 120, 20)},
 ]
 
-def _grid_geometry(width):
+def _grid_geometry(width, extra_gap_x=0, extra_gap_y=0):
     margin = 10
-    gap_x = BRICK_GAP_X
-    gap_y = BRICK_GAP_Y
+    gap_x = BRICK_GAP_X + extra_gap_x
+    gap_y = BRICK_GAP_Y + extra_gap_y
     bw = BRICK_WIDTH
     bh = BRICK_HEIGHT
     available = width - 2 * margin
@@ -118,19 +127,32 @@ def build_bricks_for_level(width, height, level_index, strength_mode):
     layout = LEVEL_LAYOUTS[level_index % len(LEVEL_LAYOUTS)]
     # Easy difficulty (all_weak): use a denser brick layout
     if strength_mode == 'all_weak' and level_index == 0:
-        return _build_easy_grid(width, height)
+        return _build_easy_grid(width, height), []
     # Medium difficulty (default): denser layout with mixed strength
     if strength_mode == 'default' and level_index == 0:
-        return _build_medium_grid(width, height)
+        return _build_medium_grid(width, height), []
     if layout is None:
-        return _default_grid(width, height, strength_mode)
-    start_x, bw, bh, gap_x, gap_y, max_cols = _grid_geometry(width)
+        return _default_grid(width, height, strength_mode), []
+
+    # Уровень 2 (индекс 1): увеличенные зазоры (+4 px)
+    extra_gap_x = 4 if level_index == 1 else 0
+    extra_gap_y = 4 if level_index == 1 else 0
+    start_x, bw, bh, gap_x, gap_y, max_cols = _grid_geometry(width, extra_gap_x, extra_gap_y)
+
     bricks = []
+    layout_walls = []
     for row_idx, row_str in enumerate(layout):
         row_len = len(row_str)
         offset = (max_cols - row_len) // 2
         for col_idx, ch in enumerate(row_str):
             if ch == '0':
+                continue
+            if ch == '3':
+                # '3' — неразрушаемая стена (Wall), не кирпич
+                col = offset + col_idx
+                x = start_x + col * (bw + gap_x)
+                y = BRICK_OFFSET_Y + row_idx * (bh + gap_y)
+                layout_walls.append(Wall(x, y, bw, bh))
                 continue
             strength = int(ch)
             if strength_mode == 'all_weak':
@@ -141,7 +163,7 @@ def build_bricks_for_level(width, height, level_index, strength_mode):
             x = start_x + col * (bw + gap_x)
             y = BRICK_OFFSET_Y + row_idx * (bh + gap_y)
             bricks.append(Brick(x, y, bw, bh, strength))
-    return bricks
+    return bricks, layout_walls
 
 def get_theme(level_index):
     return THEMES[level_index % len(THEMES)]

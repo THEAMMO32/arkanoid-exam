@@ -50,12 +50,12 @@ class GameState:
             BALL_RADIUS,
             bx, by
         )]
-        self.bricks = build_bricks_for_level(
+        self.bricks, layout_walls = build_bricks_for_level(
             width, height, level_index, self.strength_mode
         )
         self.walls = build_walls_for_level(
             width, height, difficulty, level_index
-        )
+        ) + layout_walls
 
     def get_alive_bricks(self):
         return [b for b in self.bricks if b.alive]
@@ -150,12 +150,12 @@ class GameState:
             return False
         self.level_index = next_level
         self.theme = get_theme(self.level_index)
-        self.bricks = build_bricks_for_level(
+        self.bricks, layout_walls = build_bricks_for_level(
             self.width, self.height, self.level_index, self.strength_mode
         )
         self.walls = build_walls_for_level(
             self.width, self.height, self.difficulty, self.level_index
-        )
+        ) + layout_walls
         self.speed_mul *= 1.06
         bx = BALL_SPEED_X * self.speed_mul
         by = BALL_SPEED_Y * self.speed_mul
