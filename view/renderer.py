@@ -94,7 +94,8 @@ class Renderer:
         self.screen.blit(score_txt, (10, 10))
         self.screen.blit(lives_txt, (10, 50))
         best_txt = self.font.render(f"Рекорд: {game_state.highscore}", True, WHITE)
-        self.screen.blit(best_txt, (self.width - 180, 10))
+        best_x = self.close_button_rect.x - 20 - best_txt.get_width()
+        self.screen.blit(best_txt, (best_x, 10))
 
         self._draw_close_button()
 
